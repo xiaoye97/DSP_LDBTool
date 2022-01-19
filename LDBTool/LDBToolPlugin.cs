@@ -6,6 +6,7 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using UnityEngine;
+using xiaoye97.UI;
 
 [module: UnverifiableCode]
 #pragma warning disable 618

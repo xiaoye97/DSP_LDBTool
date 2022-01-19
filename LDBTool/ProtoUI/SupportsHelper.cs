@@ -1,6 +1,6 @@
 using System;
 
-namespace xiaoye97
+namespace xiaoye97.UI
 {
     public static class SupportsHelper
     {

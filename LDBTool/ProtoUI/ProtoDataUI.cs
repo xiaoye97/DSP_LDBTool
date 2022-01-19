@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using System.Collections.Generic;
 
-namespace xiaoye97
+namespace xiaoye97.UI
 {
     /// <summary>
     /// 用来显示Proto数据，方便开发

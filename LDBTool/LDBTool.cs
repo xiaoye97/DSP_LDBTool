@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using BepInEx;
 using BepInEx.Configuration;
-using HarmonyLib;
-using UnityEngine;
 
 namespace xiaoye97
 {

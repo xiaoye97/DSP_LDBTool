@@ -1,6 +1,6 @@
 using UnityExplorer;
 
-namespace xiaoye97
+namespace xiaoye97.UI
 {
     public class ShowItem
     {
