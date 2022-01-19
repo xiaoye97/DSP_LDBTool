@@ -1,94 +1,28 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security;
-using System.Security.Permissions;
 using BepInEx;
 using BepInEx.Configuration;
-using BepInEx.Logging;
 using HarmonyLib;
 using UnityEngine;
-using UnityEngine.UI;
-
-[module: UnverifiableCode]
-#pragma warning disable 618
-[assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
-#pragma warning restore 618
 
 namespace xiaoye97
 {
-    [BepInPlugin("me.xiaoye97.plugin.Dyson.LDBTool", "LDBTool", "1.8.0")]
-    public class LDBToolPlugin : BaseUnityPlugin
-    {
-        public static ManualLogSource logger;
-        
-        void Awake()
-        {
-            logger = Logger;
-            for (int i = 0; i <= (int) ProtoType.Vein; i++)
-            {
-                LDBTool.PreToAdd.Add((ProtoType) i, new List<Proto>());
-                LDBTool.PostToAdd.Add((ProtoType) i, new List<Proto>());
-                LDBTool.TotalDict.Add((ProtoType) i, new List<Proto>());
-            }
-        }
-
-        void Start()
-        {
-            LDBTool.ShowProto = Config.Bind("config", "ShowProto", false, "是否开启数据显示");
-            LDBTool.ShowProtoHotKey = Config.Bind("config", "ShowProtoHotKey", KeyCode.F5, "呼出界面的快捷键");
-            LDBTool.ShowItemProtoHotKey = Config.Bind("config", "ShowItemProtoHotKey", KeyCode.I, "显示物品的Proto");
-            LDBTool.ShowRecipeProtoHotKey = Config.Bind("config", "ShowRecipeProtoHotKey", KeyCode.R, "显示配方的Proto");
-            Harmony.CreateAndPatchAll(typeof(LDBTool));
-        }
-
-        void Update()
-        {
-            if (LDBTool.ShowProto.Value)
-            {
-                if (Input.GetKeyDown(LDBTool.ShowProtoHotKey.Value))
-                {
-                    ProtoDataUI.Show = !ProtoDataUI.Show;
-                }
-
-                if (SupportsHelper.UnityExplorerInstalled)
-                {
-                    if (Input.GetKeyDown(LDBTool.ShowItemProtoHotKey.Value))
-                    {
-                        LDBTool.TryShowItemProto();
-                    }
-
-                    if (Input.GetKeyDown(LDBTool.ShowRecipeProtoHotKey.Value))
-                    {
-                        LDBTool.TryShowRecipeProto();
-                    }
-                }
-            }
-        }
-
-        void OnGUI()
-        {
-            if (LDBTool.ShowProto.Value && ProtoDataUI.Show)
-            {
-                ProtoDataUI.OnGUI();
-            }
-        }
-    }
-
     public static class LDBTool
     {
-        // 添加数据的Action
+        // Add data action
         public static Action PreAddDataAction, PostAddDataAction;
 
-        // 修改数据的Action
+        // Action to modify data
         public static Action<Proto> EditDataAction;
-
+        
+        internal static bool Finshed;
+        
         internal static Dictionary<ProtoType, List<Proto>> PreToAdd = new Dictionary<ProtoType, List<Proto>>();
         internal static Dictionary<ProtoType, List<Proto>> PostToAdd = new Dictionary<ProtoType, List<Proto>>();
         internal static Dictionary<ProtoType, List<Proto>> TotalDict = new Dictionary<ProtoType, List<Proto>>();
-        internal static ConfigEntry<bool> ShowProto;
-        internal static ConfigEntry<KeyCode> ShowProtoHotKey, ShowItemProtoHotKey, ShowRecipeProtoHotKey;
-        private static bool Finshed;
+
+
         private static ConfigFile CustomID = new ConfigFile($"{Paths.ConfigPath}/LDBTool/LDBTool.CustomID.cfg", true);
         private static ConfigFile CustomGridIndex = new ConfigFile($"{Paths.ConfigPath}/LDBTool/LDBTool.CustomGridIndex.cfg", true);
         private static ConfigFile CustomStringZHCN = new ConfigFile($"{Paths.ConfigPath}/LDBTool/LDBTool.CustomLocalization.ZHCN.cfg", true);
@@ -108,8 +42,7 @@ namespace xiaoye97
 
         private static Dictionary<ProtoType, Dictionary<string, ConfigEntry<string>>> FRFRDict =
             new Dictionary<ProtoType, Dictionary<string, ConfigEntry<string>>>();
-
-        private static UIItemTip lastTip;
+        
         private static Dictionary<int, Dictionary<int, int>> BuildBarDict = new Dictionary<int, Dictionary<int, int>>();
 
         /// <summary>
@@ -159,7 +92,7 @@ namespace xiaoye97
         /// <summary>
         /// 自动设置建造快捷栏
         /// </summary>
-        private static void SetBuildBar()
+        internal static void SetBuildBar()
         {
             foreach (var kv in BuildBarDict)
             {
@@ -386,7 +319,7 @@ namespace xiaoye97
             }
         }
 
-        private static void AddProtos(Dictionary<ProtoType, List<Proto>> datas)
+        internal static void AddProtos(Dictionary<ProtoType, List<Proto>> datas)
         {
             foreach (var kv in datas)
             {
@@ -405,94 +338,6 @@ namespace xiaoye97
                     else if (kv.Key == ProtoType.Tutorial) AddProtosToSet(LDB.tutorial, kv.Value);
                     else if (kv.Key == ProtoType.Vege) AddProtosToSet(LDB.veges, kv.Value);
                     else if (kv.Key == ProtoType.Vein) AddProtosToSet(LDB.veins, kv.Value);
-                }
-            }
-        }
-
-        [HarmonyPrefix, HarmonyPatch(typeof(VFPreload), "InvokeOnLoadWorkEnded")]
-        private static void VFPreloadPrePatch()
-        {
-            if (Finshed) return;
-            LDBToolPlugin.logger.LogInfo("Pre Loading...");
-            if (PreAddDataAction != null)
-            {
-                PreAddDataAction();
-                PreAddDataAction = null;
-            }
-
-            AddProtos(PreToAdd);
-        }
-
-        [HarmonyPostfix, HarmonyPatch(typeof(VFPreload), "InvokeOnLoadWorkEnded")]
-        private static void VFPreloadPostPatch()
-        {
-            if (Finshed) return;
-            LDBToolPlugin.logger.LogInfo("Post Loading...");
-            if (PostAddDataAction != null)
-            {
-                PostAddDataAction();
-                PostAddDataAction = null;
-            }
-
-            AddProtos(PostToAdd);
-            List<Proto> allProto = new List<Proto>();
-            foreach (var p in LDB.advisorTips.dataArray) allProto.Add(p);
-            foreach (var p in LDB.audios.dataArray) allProto.Add(p);
-            foreach (var p in LDB.effectEmitters.dataArray) allProto.Add(p);
-            foreach (var p in LDB.items.dataArray) allProto.Add(p);
-            foreach (var p in LDB.models.dataArray) allProto.Add(p);
-            foreach (var p in LDB.players.dataArray) allProto.Add(p);
-            foreach (var p in LDB.recipes.dataArray) allProto.Add(p);
-            foreach (var p in LDB.strings.dataArray) allProto.Add(p);
-            foreach (var p in LDB.techs.dataArray) allProto.Add(p);
-            foreach (var p in LDB.themes.dataArray) allProto.Add(p);
-            foreach (var p in LDB.tutorial.dataArray) allProto.Add(p);
-            foreach (var p in LDB.veges.dataArray) allProto.Add(p);
-            foreach (var p in LDB.veins.dataArray) allProto.Add(p);
-            if (EditDataAction != null)
-            {
-                foreach (var p in allProto)
-                {
-                    if (p != null)
-                    {
-                        try
-                        {
-                            EditDataAction(p);
-                        }
-                        catch (Exception e)
-                        {
-                            LDBToolPlugin.logger.LogWarning($"Edit Error: ID:{p.ID} Type:{p.GetType().Name} {e.Message}");
-                        }
-                    }
-                }
-            }
-
-            GameMain.iconSet.loaded = false;
-            GameMain.iconSet.Create();
-            SetBuildBar();
-            Finshed = true;
-            LDBToolPlugin.logger.LogInfo("Done.");
-        }
-
-        /// <summary>
-        /// 修复新物品不显示在合成菜单的问题
-        /// </summary>
-        /// <param name="__instance"></param>
-        [HarmonyPostfix, HarmonyPatch(typeof(GameHistoryData), "Import")]
-        private static void HistoryPatch(GameHistoryData __instance)
-        {
-            foreach (var proto in TotalDict[ProtoType.Recipe])
-            {
-                var recipe = proto as RecipeProto;
-                if (recipe.preTech != null)
-                {
-                    if (__instance.TechState(recipe.preTech.ID).unlocked)
-                    {
-                        if (!__instance.RecipeUnlocked(recipe.ID))
-                        {
-                            __instance.UnlockRecipe(recipe.ID);
-                        }
-                    }
                 }
             }
         }
@@ -556,75 +401,6 @@ namespace xiaoye97
             var list = array.ToList();
             list.Add(item);
             array = list.ToArray();
-        }
-
-        /// <summary>
-        /// 在物品提示显示ID
-        /// </summary>
-        [HarmonyPostfix, HarmonyPatch(typeof(UIItemTip), "SetTip")]
-        private static void ItemTipPatch(UIItemTip __instance, int itemId)
-        {
-            if (ShowProto.Value)
-            {
-                __instance.nameText.text += $" {itemId}";
-                lastTip = __instance;
-            }
-        }
-
-        /// <summary>
-        /// 尝试显示ItemProto，通过按键触发
-        /// </summary>
-        internal static void TryShowItemProto()
-        {
-            if (ShowProto.Value)
-            {
-                if (lastTip != null && lastTip.showingItemId != 0)
-                {
-                    var proto = LDB.items.Select(lastTip.showingItemId);
-                    if (proto != null)
-                    {
-                        RUEHelper.ShowProto(proto);
-                    }
-                    else
-                    {
-                        var recipe = LDB.recipes.Select(-lastTip.showingItemId);
-                        if (recipe != null)
-                        {
-                            foreach (var id in recipe.Results)
-                            {
-                                var item = LDB.items.Select(id);
-                                RUEHelper.ShowProto(item);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// 尝试显示RecipeProto，通过按键触发
-        /// </summary>
-        internal static void TryShowRecipeProto()
-        {
-            if (ShowProto.Value)
-            {
-                if (lastTip != null && lastTip.showingItemId != 0)
-                {
-                    var itemProto = LDB.items.Select(lastTip.showingItemId);
-                    if (itemProto != null)
-                    {
-                        foreach (var proto in itemProto.recipes)
-                        {
-                            RUEHelper.ShowProto(proto);
-                        }
-                    }
-                    else
-                    {
-                        var proto = LDB.recipes.Select(-lastTip.showingItemId);
-                        RUEHelper.ShowProto(proto);
-                    }
-                }
-            }
         }
     }
 }
