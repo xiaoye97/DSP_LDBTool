@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Reflection;
 using System.Security;
 using System.Security.Permissions;
 using BepInEx;
@@ -15,9 +16,13 @@ using xiaoye97.UI;
 
 namespace xiaoye97
 {
-    [BepInPlugin("me.xiaoye97.plugin.Dyson.LDBTool", "LDBTool", "1.8.0")]
+    [BepInPlugin(MODGUID, MODNAME, VERSION)]
     public class LDBToolPlugin : BaseUnityPlugin
     {
+        public const string MODNAME = "LDBTool";
+        public const string MODGUID = "me.xiaoye97.plugin.Dyson.LDBTool";
+        public const string VERSION = "2.0.0";
+        
         internal static ManualLogSource logger;
         internal static ConfigEntry<bool> ShowProto;
         internal static ConfigEntry<KeyCode> ShowProtoHotKey, ShowItemProtoHotKey, ShowRecipeProtoHotKey;
@@ -27,18 +32,19 @@ namespace xiaoye97
         void Awake()
         {
             logger = Logger;
-            for (int i = 0; i <= (int) ProtoType.Vein; i++)
-            {
-                LDBTool.PreToAdd.Add((ProtoType) i, new List<Proto>());
-                LDBTool.PostToAdd.Add((ProtoType) i, new List<Proto>());
-                LDBTool.TotalDict.Add((ProtoType) i, new List<Proto>());
-            }
+            
+            ProtoIndex.InitIndex();
+            LDBTool.Init();
             
             ShowProto = Config.Bind("config", "ShowProto", false, "是否开启数据显示");
             ShowProtoHotKey = Config.Bind("config", "ShowProtoHotKey", KeyCode.F5, "呼出界面的快捷键");
             ShowItemProtoHotKey = Config.Bind("config", "ShowItemProtoHotKey", KeyCode.I, "显示物品的Proto");
             ShowRecipeProtoHotKey = Config.Bind("config", "ShowRecipeProtoHotKey", KeyCode.R, "显示配方的Proto");
-            Harmony.CreateAndPatchAll(typeof(LDBTool));
+
+            Harmony harmony = new Harmony(MODGUID);
+            harmony.PatchAll(Assembly.GetExecutingAssembly());
+            
+            logger.LogInfo("LDBTool is loaded successfully!");
         }
 
 

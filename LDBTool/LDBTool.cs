@@ -1,50 +1,25 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
+using HarmonyLib;
 
 namespace xiaoye97
 {
     public static class LDBTool
     {
+        #region Public Interface
+        
         // Add data action
         public static Action PreAddDataAction, PostAddDataAction;
 
         // Action to modify data
         public static Action<Proto> EditDataAction;
         
-        internal static bool Finshed;
-        
-        internal static Dictionary<ProtoType, List<Proto>> PreToAdd = new Dictionary<ProtoType, List<Proto>>();
-        internal static Dictionary<ProtoType, List<Proto>> PostToAdd = new Dictionary<ProtoType, List<Proto>>();
-        internal static Dictionary<ProtoType, List<Proto>> TotalDict = new Dictionary<ProtoType, List<Proto>>();
-
-
-        private static ConfigFile CustomID = new ConfigFile($"{Paths.ConfigPath}/LDBTool/LDBTool.CustomID.cfg", true);
-        private static ConfigFile CustomGridIndex = new ConfigFile($"{Paths.ConfigPath}/LDBTool/LDBTool.CustomGridIndex.cfg", true);
-        private static ConfigFile CustomStringZHCN = new ConfigFile($"{Paths.ConfigPath}/LDBTool/LDBTool.CustomLocalization.ZHCN.cfg", true);
-        private static ConfigFile CustomStringENUS = new ConfigFile($"{Paths.ConfigPath}/LDBTool/LDBTool.CustomLocalization.ENUS.cfg", true);
-        private static ConfigFile CustomStringFRFR = new ConfigFile($"{Paths.ConfigPath}/LDBTool/LDBTool.CustomLocalization.FRFR.cfg", true);
-
-        private static Dictionary<ProtoType, Dictionary<string, ConfigEntry<int>>> IDDict = new Dictionary<ProtoType, Dictionary<string, ConfigEntry<int>>>();
-
-        private static Dictionary<ProtoType, Dictionary<string, ConfigEntry<int>>> GridIndexDict =
-            new Dictionary<ProtoType, Dictionary<string, ConfigEntry<int>>>();
-
-        private static Dictionary<ProtoType, Dictionary<string, ConfigEntry<string>>> ZHCNDict =
-            new Dictionary<ProtoType, Dictionary<string, ConfigEntry<string>>>();
-
-        private static Dictionary<ProtoType, Dictionary<string, ConfigEntry<string>>> ENUSDict =
-            new Dictionary<ProtoType, Dictionary<string, ConfigEntry<string>>>();
-
-        private static Dictionary<ProtoType, Dictionary<string, ConfigEntry<string>>> FRFRDict =
-            new Dictionary<ProtoType, Dictionary<string, ConfigEntry<string>>>();
-        
-        private static Dictionary<int, Dictionary<int, int>> BuildBarDict = new Dictionary<int, Dictionary<int, int>>();
-
         /// <summary>
-        /// 设置建造快捷栏
+        /// Set up the construction shortcut bar
         /// </summary>
         /// <param name="category">第几栏</param>
         /// <param name="index">第几个格子</param>
@@ -86,9 +61,110 @@ namespace xiaoye97
                 BuildBarDict[category][index] = itemId;
             }
         }
+        
+        /// <summary>
+        /// Add data before game data loads
+        /// </summary>
+        /// <param name="proto">要添加的Proto</param>
+        public static void PreAddProto(Proto proto)
+        {
+            int index = ProtoIndex.GetIndex(proto.GetType());
+            
+            if (!PreToAdd[index].Contains(proto))
+            {
+                if (proto is StringProto)
+                {
+                    int id = FindAvailableStringID();
+                    proto.ID = id;
+                }
+
+                Bind(proto);
+                PreToAdd[index].Add(proto);
+                TotalDict[index].Add(proto);
+            }
+        }
 
         /// <summary>
-        /// 自动设置建造快捷栏
+        /// Add data before game data loads
+        /// </summary>
+        [Obsolete("Please use PreAddProto(Proto proto)")]
+        public static void PreAddProto(ProtoType protoType, Proto proto)
+        {
+            PreAddProto(proto);
+        }
+        
+        
+        /// <summary>
+        /// Add data after the game data is loaded
+        /// </summary>
+        /// <param name="proto">要添加的Proto</param>
+        public static void PostAddProto(Proto proto)
+        {
+            int index = ProtoIndex.GetIndex(proto.GetType());
+            
+            if (!PostToAdd[index].Contains(proto))
+            {
+                if (proto is StringProto)
+                {
+                    int id = FindAvailableStringID();
+                    proto.ID = id;
+                }
+                
+                Bind(proto);
+                PostToAdd[index].Add(proto);
+                TotalDict[index].Add(proto);
+            }
+        }
+        
+        /// <summary>
+        /// Add data after the game data is loaded
+        /// </summary>
+        [Obsolete("Please use PostAddProto(Proto proto)")]
+        public static void PostAddProto(ProtoType protoType, Proto proto)
+        {
+            PostAddProto(proto);
+        }
+
+        #endregion
+
+        #region Implementation
+
+        internal static bool Finshed;
+        private static int lastStringId = 1000;
+        
+        internal static List<List<Proto>> PreToAdd = new List<List<Proto>>();
+        internal static List<List<Proto>> PostToAdd = new List<List<Proto>>();
+        internal static List<List<Proto>> TotalDict = new List<List<Proto>>();
+        
+        private static List<Dictionary<string, ConfigEntry<int>>> IDDict = new List<Dictionary<string, ConfigEntry<int>>>();
+        private static List<Dictionary<string, ConfigEntry<int>>> GridIndexDict = new List<Dictionary<string, ConfigEntry<int>>>();
+        
+        private static Dictionary<string, ConfigEntry<string>> ZHCNDict = new Dictionary<string, ConfigEntry<string>>();
+        private static Dictionary<string, ConfigEntry<string>> ENUSDict = new Dictionary<string, ConfigEntry<string>>();
+        private static Dictionary<string, ConfigEntry<string>> FRFRDict = new Dictionary<string, ConfigEntry<string>>();
+        private static Dictionary<int, Dictionary<int, int>> BuildBarDict = new Dictionary<int, Dictionary<int, int>>();
+        
+        private static ConfigFile CustomID = new ConfigFile($"{Paths.ConfigPath}/LDBTool/LDBTool.CustomID.cfg", true);
+        private static ConfigFile CustomGridIndex = new ConfigFile($"{Paths.ConfigPath}/LDBTool/LDBTool.CustomGridIndex.cfg", true);
+        private static ConfigFile CustomStringZHCN = new ConfigFile($"{Paths.ConfigPath}/LDBTool/LDBTool.CustomLocalization.ZHCN.cfg", true);
+        private static ConfigFile CustomStringENUS = new ConfigFile($"{Paths.ConfigPath}/LDBTool/LDBTool.CustomLocalization.ENUS.cfg", true);
+        private static ConfigFile CustomStringFRFR = new ConfigFile($"{Paths.ConfigPath}/LDBTool/LDBTool.CustomLocalization.FRFR.cfg", true);
+
+
+        internal static void Init()
+        {
+            for (int i = 0; i <= ProtoIndex.GetProtosCount(); i++)
+            {
+                PreToAdd.Add(new List<Proto>());
+                PostToAdd.Add(new List<Proto>());
+                TotalDict.Add(new List<Proto>());
+                IDDict.Add(new Dictionary<string, ConfigEntry<int>>());
+                GridIndexDict.Add(new Dictionary<string, ConfigEntry<int>>());
+            }
+        }
+
+        /// <summary>
+        /// Automatically set the construction shortcut bar
         /// </summary>
         internal static void SetBuildBar()
         {
@@ -109,87 +185,81 @@ namespace xiaoye97
                 }
             }
         }
-
+        
         /// <summary>
-        /// 用户配置数据绑定
+        /// User configuration data binding
         /// </summary>
-        private static void Bind(ProtoType protoType, Proto proto)
+        private static void Bind(Proto proto)
         {
-            IdBind(protoType, proto);
-            GridIndexBind(protoType, proto);
-            StringBind(protoType, proto);
+            IdBind(proto);
+            GridIndexBind(proto);
+            StringBind(proto);
         }
 
         /// <summary>
-        /// 通过配置文件绑定ID，允许玩家在冲突时自定义ID
+        /// Bind the ID through the configuration file, allowing players to customize the ID in the event of conflict
         /// </summary>
-        private static void IdBind(ProtoType protoType, Proto proto)
+        private static void IdBind(Proto proto)
         {
             if (proto is StringProto) return;
+            int index = ProtoIndex.GetIndex(proto);
             
-            var entry = CustomID.Bind(protoType.ToString(), proto.Name, proto.ID);
+            var entry = CustomID.Bind(ProtoIndex.GetProtoName(proto), proto.Name, proto.ID);
             proto.ID = entry.Value;
-            if (!IDDict.ContainsKey(protoType))
-            {
-                IDDict.Add(protoType, new Dictionary<string, ConfigEntry<int>>());
-            }
-
-            if (IDDict[protoType].ContainsKey(proto.Name))
+            
+            if (IDDict[index].ContainsKey(proto.Name))
             {
                 LDBToolPlugin.logger.LogError($"[CustomID] ID:{proto.ID} Name:{proto.Name} There is a conflict, please check.");
             }
             else
             {
-                IDDict[protoType].Add(proto.Name, entry);
+                IDDict[index].Add(proto.Name, entry);
             }
         }
 
         /// <summary>
-        /// 通过配置文件绑定GridIndex，允许玩家在冲突时自定义GridIndex
-        /// 在自定义ID之后执行
+        /// Bind GridIndex through the configuration file, allowing players to customize GridIndex in the event of conflict
+        /// Execute after custom ID
         /// </summary>
-        private static void GridIndexBind(ProtoType protoType, Proto proto)
+        private static void GridIndexBind(Proto proto)
         {
             ConfigEntry<int> entry = null;
             
             if (proto is ItemProto item)
             {
-                entry = CustomGridIndex.Bind(protoType.ToString(), item.ID.ToString(), item.GridIndex, $"Item Name = {item.Name}");
+                entry = CustomGridIndex.Bind(ProtoIndex.GetProtoName(proto), item.ID.ToString(), item.GridIndex, $"Item Name = {item.Name}");
                 item.GridIndex = entry.Value;
             }
             else if (proto is RecipeProto recipe)
             {
-                entry = CustomGridIndex.Bind(protoType.ToString(), recipe.ID.ToString(), recipe.GridIndex, $"Recipe Name = {recipe.Name}");
+                entry = CustomGridIndex.Bind(ProtoIndex.GetProtoName(proto), recipe.ID.ToString(), recipe.GridIndex, $"Recipe Name = {recipe.Name}");
                 recipe.GridIndex = entry.Value;
             }
 
             if (entry == null) return;
             
-            if (!GridIndexDict.ContainsKey(protoType))
-            {
-                GridIndexDict.Add(protoType, new Dictionary<string, ConfigEntry<int>>());
-            }
+            int index = ProtoIndex.GetIndex(proto);
 
-            if (GridIndexDict[protoType].ContainsKey(proto.Name))
+            if (GridIndexDict[index].ContainsKey(proto.Name))
             {
                 LDBToolPlugin.logger.LogError($"[CustomGridIndex] ID:{proto.ID} Name:{proto.Name} There is a conflict, please check.");
             }
             else
             {
-                GridIndexDict[protoType].Add(proto.Name, entry);
+                GridIndexDict[index].Add(proto.Name, entry);
             }
         }
 
         /// <summary>
-        /// 通过配置文件绑定翻译文件，允许玩家在翻译缺失或翻译不准确时自定义翻译
+        /// Bind translation files through configuration files, allowing players to customize translations when translations are missing or inaccurate
         /// </summary>
-        private static void StringBind(ProtoType protoType, Proto proto)
+        private static void StringBind(Proto proto)
         {
             if (!(proto is StringProto stringProto)) return;
             
-            var zhcn = CustomStringZHCN.Bind(protoType.ToString(), stringProto.Name, stringProto.ZHCN, stringProto.Name);
-            var enus = CustomStringENUS.Bind(protoType.ToString(), stringProto.Name, stringProto.ENUS, stringProto.Name);
-            var frfr = CustomStringFRFR.Bind(protoType.ToString(), stringProto.Name, stringProto.FRFR, stringProto.Name);
+            var zhcn = CustomStringZHCN.Bind("String", stringProto.Name, stringProto.ZHCN, stringProto.Name);
+            var enus = CustomStringENUS.Bind("String", stringProto.Name, stringProto.ENUS, stringProto.Name);
+            var frfr = CustomStringFRFR.Bind("String", stringProto.Name, stringProto.FRFR, stringProto.Name);
                 
             if (!String.Equals(zhcn.Value, ""))
                 stringProto.ZHCN = zhcn.Value;
@@ -208,49 +278,52 @@ namespace xiaoye97
                 
             if (!string.IsNullOrEmpty(zhcn.Value))
             {
-                if (!ZHCNDict.ContainsKey(protoType)) ZHCNDict.Add(protoType, new Dictionary<string, ConfigEntry<string>>());
-                if (ZHCNDict[protoType].ContainsKey(stringProto.Name))
+                if (ZHCNDict.ContainsKey(stringProto.Name))
                 {
                     LDBToolPlugin.logger.LogError($"[CustomLocalization.ZHCN] Name:{stringProto.Name} There is a conflict, please check.");
                 }
-                else ZHCNDict[protoType].Add(stringProto.Name, zhcn);
+                else ZHCNDict.Add(stringProto.Name, zhcn);
             }
 
             if (ENUSDict != null)
             {
-                if (!ENUSDict.ContainsKey(protoType)) ENUSDict.Add(protoType, new Dictionary<string, ConfigEntry<string>>());
-                if (ENUSDict[protoType].ContainsKey(stringProto.Name))
+                if (ENUSDict.ContainsKey(stringProto.Name))
                 {
                     LDBToolPlugin.logger.LogError($"[CustomLocalization.ENUS] Name:{stringProto.Name} There is a conflict, please check.");
                 }
-                else ENUSDict[protoType].Add(stringProto.Name, enus);
+                else ENUSDict.Add(stringProto.Name, enus);
             }
 
             if (!string.IsNullOrEmpty(frfr.Value))
             {
-                if (!FRFRDict.ContainsKey(protoType)) FRFRDict.Add(protoType, new Dictionary<string, ConfigEntry<string>>());
-                if (FRFRDict[protoType].ContainsKey(stringProto.Name))
+                if (FRFRDict.ContainsKey(stringProto.Name))
                 {
                     LDBToolPlugin.logger.LogError($"[CustomLocalization.FRFR] Name:{stringProto.Name} There is a conflict, please check.");
                 }
-                else FRFRDict[protoType].Add(stringProto.Name, frfr);
+                else FRFRDict.Add(stringProto.Name, frfr);
             }
         }
         
-        internal static bool HasStringIdRegisted(int id)
+        /// <summary>
+        /// Check if string with id was already registered
+        /// </summary>
+        /// <param name="id">ID</param>
+        private static bool HasStringIdRegisted(int id)
         {
             if (LDB.strings.dataIndices.ContainsKey(id)) return true;
             
-            if (PreToAdd[ProtoType.String].Any(proto => proto.ID == id)) return true;
-            if (PostToAdd[ProtoType.String].Any(proto => proto.ID == id)) return true;
+            if (PreToAdd[ProtoIndex.GetIndex(typeof(StringProto))].Any(proto => proto.ID == id)) return true;
+            if (PostToAdd[ProtoIndex.GetIndex(typeof(StringProto))].Any(proto => proto.ID == id)) return true;
             
             return false;
         }
-        
-        internal static int lastStringId = 1000;
 
-
-        internal static int FindAvailableStringID()
+        /// <summary>
+        /// Get last free string ID
+        /// </summary>
+        /// <returns>Last free ID</returns>
+        /// <exception cref="ArgumentException">If there are no free ID's left</exception>
+        private static int FindAvailableStringID()
         {
             int id = lastStringId + 1;
 
@@ -276,72 +349,31 @@ namespace xiaoye97
         }
 
         /// <summary>
-        /// 在游戏数据加载之前添加数据
+        /// Add all Protos in datas to corresponding proto sets
         /// </summary>
-        /// <param name="protoType">要添加的Proto的类型</param>
-        /// <param name="proto">要添加的Proto</param>
-        public static void PreAddProto(ProtoType protoType, Proto proto)
+        /// <param name="datas">List of List of Protos.</param>
+        internal static void AddProtos(List<List<Proto>> datas)
         {
-            if (!PreToAdd[protoType].Contains(proto))
+            Type[] protoTypes = ProtoIndex.GetAllProtoTypes();
+            for (int i = 0; i < protoTypes.Length; i++)
             {
-                if (proto is StringProto)
+                Type protoType = protoTypes[i];
+                PropertyInfo protoProperty = typeof(LDB).GetProperties().First(property =>
                 {
-                    int id = FindAvailableStringID();
-                    proto.ID = id;
-                }
+                    Type setType = typeof(ProtoSet<>).MakeGenericType(protoType);
+                    return setType.IsAssignableFrom(property.PropertyType);
+                });
 
-                Bind(protoType, proto);
-                PreToAdd[protoType].Add(proto);
-                TotalDict[protoType].Add(proto);
+                MethodInfo genericMethod = typeof(LDBTool).GetMethod(nameof(AddProtosToSet), AccessTools.all);
+                MethodInfo method = genericMethod.MakeGenericMethod(protoType);
+
+                object protoSet = protoProperty.GetValue(null);
+                method.Invoke(null, new[] {protoSet, datas[i]});
             }
         }
 
         /// <summary>
-        /// 在游戏数据加载之后添加数据
-        /// </summary>
-        /// <param name="protoType">要添加的Proto的类型</param>
-        /// <param name="proto">要添加的Proto</param>
-        public static void PostAddProto(ProtoType protoType, Proto proto)
-        {
-            if (!PostToAdd[protoType].Contains(proto))
-            {
-                if (proto is StringProto)
-                {
-                    int id = FindAvailableStringID();
-                    proto.ID = id;
-                }
-                
-                Bind(protoType, proto);
-                PostToAdd[protoType].Add(proto);
-                TotalDict[protoType].Add(proto);
-            }
-        }
-
-        internal static void AddProtos(Dictionary<ProtoType, List<Proto>> datas)
-        {
-            foreach (var kv in datas)
-            {
-                if (kv.Value.Count > 0)
-                {
-                    if (kv.Key == ProtoType.AdvisorTip) AddProtosToSet(LDB.advisorTips, kv.Value);
-                    else if (kv.Key == ProtoType.Audio) AddProtosToSet(LDB.audios, kv.Value);
-                    else if (kv.Key == ProtoType.EffectEmitter) AddProtosToSet(LDB.effectEmitters, kv.Value);
-                    else if (kv.Key == ProtoType.Item) AddProtosToSet(LDB.items, kv.Value);
-                    else if (kv.Key == ProtoType.Model) AddProtosToSet(LDB.models, kv.Value);
-                    else if (kv.Key == ProtoType.Player) AddProtosToSet(LDB.players, kv.Value);
-                    else if (kv.Key == ProtoType.Recipe) AddProtosToSet(LDB.recipes, kv.Value);
-                    else if (kv.Key == ProtoType.String) AddProtosToSet(LDB.strings, kv.Value);
-                    else if (kv.Key == ProtoType.Tech) AddProtosToSet(LDB.techs, kv.Value);
-                    else if (kv.Key == ProtoType.Theme) AddProtosToSet(LDB.themes, kv.Value);
-                    else if (kv.Key == ProtoType.Tutorial) AddProtosToSet(LDB.tutorial, kv.Value);
-                    else if (kv.Key == ProtoType.Vege) AddProtosToSet(LDB.veges, kv.Value);
-                    else if (kv.Key == ProtoType.Vein) AddProtosToSet(LDB.veins, kv.Value);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 添加多个数据到数据表
+        /// Add list contains to ProtoSet
         /// </summary>
         private static void AddProtosToSet<T>(ProtoSet<T> protoSet, List<Proto> protos) where T : Proto
         {
@@ -392,7 +424,7 @@ namespace xiaoye97
         }
 
         /// <summary>
-        /// 数组添加数据
+        /// Append data to the end of array
         /// </summary>
         private static void ArrayAddItem<T>(ref T[] array, T item)
         {
@@ -400,5 +432,7 @@ namespace xiaoye97
             list.Add(item);
             array = list.ToArray();
         }
+
+        #endregion
     }
 }

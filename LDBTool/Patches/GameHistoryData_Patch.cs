@@ -12,7 +12,7 @@ namespace xiaoye97.Patches
         [HarmonyPostfix, HarmonyPatch(typeof(GameHistoryData), "Import")]
         private static void HistoryPatch(GameHistoryData __instance)
         {
-            foreach (var proto in LDBTool.TotalDict[ProtoType.Recipe])
+            foreach (var proto in LDBTool.TotalDict[ProtoIndex.GetIndex(typeof(RecipeProto))])
             {
                 var recipe = proto as RecipeProto;
                 if (recipe.preTech != null)

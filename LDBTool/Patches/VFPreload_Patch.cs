@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using HarmonyLib;
 
 namespace xiaoye97.Patches
@@ -33,35 +34,23 @@ namespace xiaoye97.Patches
             }
 
             LDBTool.AddProtos(LDBTool.PostToAdd);
-            List<Proto> allProto = new List<Proto>();
-            foreach (var p in LDB.advisorTips.dataArray) allProto.Add(p);
-            foreach (var p in LDB.audios.dataArray) allProto.Add(p);
-            foreach (var p in LDB.effectEmitters.dataArray) allProto.Add(p);
-            foreach (var p in LDB.items.dataArray) allProto.Add(p);
-            foreach (var p in LDB.models.dataArray) allProto.Add(p);
-            foreach (var p in LDB.players.dataArray) allProto.Add(p);
-            foreach (var p in LDB.recipes.dataArray) allProto.Add(p);
-            foreach (var p in LDB.strings.dataArray) allProto.Add(p);
-            foreach (var p in LDB.techs.dataArray) allProto.Add(p);
-            foreach (var p in LDB.themes.dataArray) allProto.Add(p);
-            foreach (var p in LDB.tutorial.dataArray) allProto.Add(p);
-            foreach (var p in LDB.veges.dataArray) allProto.Add(p);
-            foreach (var p in LDB.veins.dataArray) allProto.Add(p);
+
             if (LDBTool.EditDataAction != null)
             {
-                foreach (var p in allProto)
+                foreach (PropertyInfo propertyInfo in typeof(LDB).GetProperties())
                 {
-                    if (p != null)
+                    Type setType = propertyInfo.PropertyType;
+                    if (!setType.IsConstructedGenericType)
                     {
-                        try
-                        {
-                            LDBTool.EditDataAction(p);
-                        }
-                        catch (Exception e)
-                        {
-                            LDBToolPlugin.logger.LogWarning($"Edit Error: ID:{p.ID} Type:{p.GetType().Name} {e.Message}");
-                        }
+                        setType = setType.BaseType;
                     }
+
+                    Type protoType = setType.GetGenericArguments()[0];
+
+                    object protoSet = propertyInfo.GetValue(null);
+
+                    MethodInfo method = typeof(VFPreload_Patch).GetMethod(nameof(EditAllProtos), AccessTools.all).MakeGenericMethod(protoType);
+                    method.Invoke(null, new[] {protoSet});
                 }
             }
 
@@ -70,6 +59,24 @@ namespace xiaoye97.Patches
             LDBTool.SetBuildBar();
             LDBTool.Finshed = true;
             LDBToolPlugin.logger.LogInfo("Done.");
+        }
+
+        private static void EditAllProtos<T>(ProtoSet<T> protoSet)
+            where T : Proto
+        {
+            foreach (T proto in protoSet.dataArray)
+            {
+                if (proto == null) continue;
+
+                try
+                {
+                    LDBTool.EditDataAction(proto);
+                }
+                catch (Exception e)
+                {
+                    LDBToolPlugin.logger.LogWarning($"Edit Error: ID:{proto.ID} Type:{proto.GetType().Name} {e.Message}");
+                }
+            }
         }
     }
 }
