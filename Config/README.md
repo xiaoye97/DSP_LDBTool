@@ -1,36 +1,18 @@
-# Rebind Build Bar
+# LDBTool
 
-Regain control of your Build Bar! This mod allows to rebind any Build bar items as you desire.
+Library that allows mods to add and edit Proto data. Also allows you to see Proto data, config ID's of mod Protos and change localized strings
 
-![BarPreview](https://raw.githubusercontent.com/kremnev8/DSP-Mods/master/Mods/RebindBuildBar/rebind-showcase.gif)
-
-Also you can see all bound items even if they are not unlocked and rebind them too. And last but not least you can bind items you haven't unlocked yet too.
-
-<p align="center">
-<img src="https://raw.githubusercontent.com/kremnev8/DSP-Mods/master/Mods/RebindBuildBar/locked-preview.png?raw=true"/>
-<img src="https://raw.githubusercontent.com/kremnev8/DSP-Mods/master/Mods/RebindBuildBar/locked-rebind.png?raw=true"/>
-</p>
-
-To rebind either `Ctrl` click needed item or press `Ctrl+F1-10`. An item picker will popup and you will be able to rebind. <br/>
-If you ever want to remove an item from build bar just `Middle mouse click` on that item.<br/>
-To reset your settings to default you can press reset button on the bar. If you press it all items in `current` category will be reset to defaults. If you hold `Ctrl` when you press it, all items in `all` categories will be reset. All keybinds can be rebound. <br/>
-
-All of your settings are stored in a config file located at `Dyson Sphere Program/BepInEx/config/RebindBuildBar/`.
-
-## Feedback and Bug Report
-More features and improvements might come in the future. Feel free to contact me via Discord (Kremnev8#3756) for any feedback, bug-reports or suggestions.
-
-This mod is compatible with [Galactic Scale 2](https://dsp.thunderstore.io/package/Galactic_Scale/GalacticScale/)<br/>
-This mod is compatible with [Nebula Multiplayer Mod](https://dsp.thunderstore.io/package/nebula/NebulaMultiplayerMod/)<br/>
-
-## How can I support this mod
-If you like what I do and would like to support me you can [donate](https://paypal.me/kremnev8). <br/>
-If you want other means to support me, you can [message](#feedback-and-bug-report) me on discord about it.
+# List of features
+- Add new Protos to game ProtoSets
+- Edit existing Protos
+- Configure ID, Grid index of created Protos in config file located at `Dyson Sphere Program/BepInEx/config/LDBTool`
+- Customize mod localization
+- View all Protos and inspect them using [UnityExplorer](https://dsp.thunderstore.io/package/sinai-dev/UnityExplorer/)
 
 ## Installation
 ### With Mod Manager
 
-Simply open the mod manager (if you don't have it install it [here](https://dsp.thunderstore.io/package/ebkr/r2modman/)), select **Rebind Build Bar by kremnev8**, then **Download**.
+Simply open the mod manager (if you don't have it install it [here](https://dsp.thunderstore.io/package/ebkr/r2modman/)), select **LDB Tool by xiaoye97**, then **Download**.
 
 If prompted to download with dependencies, select `Yes`.
 
@@ -38,12 +20,47 @@ Then just click **Start modded**, and the game will run with the mod installed.
 
 ### Manually
 Install BepInEx from [here](https://dsp.thunderstore.io/package/xiaoye97/BepInEx/)<br/>
-Install CommonAPI and all of its dependencies from [here](https://dsp.thunderstore.io/package/CommonAPI/CommonAPI/)<br/>
+Unzip mod arhive into `Dyson Sphere Program/BepInEx/plugins/LDBTool/`. (Create folder named `LDBTool`)<br/>
 
-Unzip all files into `Dyson Sphere Program/BepInEx/plugins/RebindBuildBar/`. (Create folder named `RebindBuildBar`)<br/>
+## Feedback and Bug Report
+Feel free to contact me via Discord (Kremnev8#3756) for any feedback, bug-reports or suggestions.
 
 ## Changelog
-### v1.0.1-2
-- Added plugin catergories on Thunderstore page.
-### v1.0.0
-- Initial Release
+### v2.0.0
+- Fix README
+
+### v2.0.0
+- Types of protos that can be added is now computed at runtime
+- Strings are bound in config file by their string key
+- Strings ID's now are autoassigned and not bound to config file
+- Now mods can override empty strings binding
+- Added UnityExplorer support to Proto UI
+
+### v1.8.0
+- Added the function of custom translation, players can customize the translated text added by the Mod in the configuration file.
+
+### v1.7.0
+- Added the ability to customize the construction shortcut bar
+
+### v1.6.0
+- Optimized GUI, use RuntimeUnityEditor's skin when RuntimeUnityEditor is installed
+- Added Proto search function, you can search for ID, Name, and translation
+- Added a custom GridIndex configuration file, players can define the location of Mod items by themselves.
+
+### v1.5.0
+- Added the function of easily querying Proto data in the data display mode (point the mouse at the item, press I to view ItemProto, and press R to view RECEIVEPROTO)
+- In the data display mode, the Tip of the item will display the ID later
+
+### v1.4.0
+- A profile with a custom ID has been added, and players can define the ID of the Mod item by themselves.
+
+### v1.3.0
+- Fixed item sorting issue
+- Add object copy method
+
+### v1.2.0
+- Split the added data into pre-added and post-added in order to add translation Proto
+
+### v1.1.0
+- Support for modifying Proto data
+- Add Proto data to view GUI

@@ -1,16 +1,17 @@
 using System;
+using HarmonyLib;
 
 namespace xiaoye97.UI
 {
     public static class SupportsHelper
     {
-        private static readonly Type _unityExplorerType = Type.GetType("UnityExplorer.InspectorManager", false);
+        private static readonly Type _unityExplorerType;
         
-        public static bool UnityExplorerInstalled { get; }
+        public static bool UnityExplorerInstalled => _unityExplorerType != null;
 
         static SupportsHelper()
         {
-            UnityExplorerInstalled = _unityExplorerType != null;
+            _unityExplorerType = AccessTools.TypeByName("UnityExplorer.InspectorManager");
         }
     }
 

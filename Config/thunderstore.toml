@@ -2,16 +2,15 @@
 schemaVersion = "0.0.1"
 
 [package]
-namespace = "kremnev8"
-name = "RebindBuildBar"
-description = "Regain control of your Build Bar! This mod allows to rebind any Build bar items as you desire."
-versionNumber = "1.0.2"
-websiteUrl = "https://github.com/kremnev8/DSP-Mods/tree/master/Mods/RebindBuildBar"
+namespace = "xiaoye97"
+name = "LDBTool"
+description = "Library that allows mods to add and edit Proto data. Also allows you to see Proto data, config ID's of mod Protos and change localized strings"
+versionNumber = "2.0.1"
+websiteUrl = "https://github.com/kremnev8/DSP-Mods/tree/master/Mods/LDBTool"
 containsNsfwContent = false
 
   [package.dependencies]
-  xiaoye97-BepInEx = "5.4.11"
-  CommonAPI-CommonAPI = "1.1.0"
+  xiaoye97-BepInEx = "5.4.17"
 
 [build]
 icon = "./icon.png"
@@ -25,4 +24,4 @@ outdir = "./../Build"
 [publish]
 repository = "https://dsp.thunderstore.io"
 communities = [ "dyson-sphere-program" ]
-categories = [ "quality-of-life", "nebula-compatible" ]
+categories = [ "libraries" ]
