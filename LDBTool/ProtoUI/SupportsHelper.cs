@@ -10,12 +10,15 @@ namespace xiaoye97.UI
         internal static readonly Type unityExplorerType;
         internal static readonly MethodInfo inspectMethod;
         
-        public static bool UnityExplorerInstalled => unityExplorerType != null;
+        public static bool UnityExplorerInstalled => unityExplorerType != null && inspectMethod != null;
 
         static SupportsHelper()
         {
             unityExplorerType = AccessTools.TypeByName("UnityExplorer.InspectorManager");
-            inspectMethod = unityExplorerType.GetMethods().First(info => info.Name == "Inspect" && info.GetParameters().Length == 2);
+            if (unityExplorerType != null)
+            {
+                inspectMethod = unityExplorerType.GetMethods().First(info => info.Name == "Inspect" && info.GetParameters().Length == 2);
+            }
         }
     }
 

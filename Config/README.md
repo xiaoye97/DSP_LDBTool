@@ -26,6 +26,8 @@ Unzip mod arhive into `Dyson Sphere Program/BepInEx/plugins/LDBTool/`. (Create f
 Feel free to contact me via Discord (Kremnev8#3756) for any feedback, bug-reports or suggestions.
 
 ## Changelog
+### v2.0.5
+- Fixed errors if UnityExporer was not installed.
 ### v2.0.4
 - Fixed issues if one of mods had missing type references
 - Fixed issues opening Proto View UI without UnityExplorer
