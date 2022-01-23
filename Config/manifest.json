@@ -1,7 +1,7 @@
 {
   "name": "LDBTool",
   "version_number": "2.0.3",
-  "website_url": "https://github.com/kremnev8/DSP-Mods/tree/master/Mods/LDBTool",
+  "website_url": "https://github.com/xiaoye97/DSP_LDBTool",
   "description": "Library that allows mods to add and edit Proto data. Also allows you to see Proto data, config ID's of mod Protos and change localized strings",
   "dependencies": [
     "xiaoye97-BepInEx-5.4.17"
