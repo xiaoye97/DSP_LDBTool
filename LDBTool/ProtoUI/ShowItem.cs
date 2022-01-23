@@ -1,4 +1,3 @@
-using UnityExplorer;
 
 namespace xiaoye97.UI
 {
@@ -12,7 +11,10 @@ namespace xiaoye97.UI
 
         public void Show()
         {
-            InspectorManager.Inspect(proto);
+            if (SupportsHelper.UnityExplorerInstalled)
+            {
+                SupportsHelper.inspectMethod.Invoke(null, new[] {proto, null});
+            }
         }
     }
 }

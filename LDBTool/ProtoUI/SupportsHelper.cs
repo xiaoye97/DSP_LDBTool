@@ -1,17 +1,21 @@
 using System;
+using System.Linq;
+using System.Reflection;
 using HarmonyLib;
 
 namespace xiaoye97.UI
 {
     public static class SupportsHelper
     {
-        private static readonly Type _unityExplorerType;
+        internal static readonly Type unityExplorerType;
+        internal static readonly MethodInfo inspectMethod;
         
-        public static bool UnityExplorerInstalled => _unityExplorerType != null;
+        public static bool UnityExplorerInstalled => unityExplorerType != null;
 
         static SupportsHelper()
         {
-            _unityExplorerType = AccessTools.TypeByName("UnityExplorer.InspectorManager");
+            unityExplorerType = AccessTools.TypeByName("UnityExplorer.InspectorManager");
+            inspectMethod = unityExplorerType.GetMethods().First(info => info.Name == "Inspect" && info.GetParameters().Length == 2);
         }
     }
 
