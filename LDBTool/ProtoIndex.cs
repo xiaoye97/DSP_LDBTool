@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace xiaoye97
 {
@@ -14,8 +15,8 @@ namespace xiaoye97
             LDBToolPlugin.logger.LogDebug($"Generating Proto type list:");
             protoTypes = (
                 from domainAssembly in AppDomain.CurrentDomain.GetAssemblies()
-                from assemblyType in domainAssembly.GetTypes()
-                where typeof(Proto).IsAssignableFrom(assemblyType) && assemblyType != typeof(Proto)
+                from assemblyType in GetTypesSafe(domainAssembly)
+                where assemblyType != null && typeof(Proto).IsAssignableFrom(assemblyType) && assemblyType != typeof(Proto)
                 select assemblyType
                 ).ToArray();
 
@@ -26,7 +27,22 @@ namespace xiaoye97
             }
         }
 
-        public static int GetProtosCount()
+        private static Type[] GetTypesSafe(Assembly assembly)
+        {
+            Type[] types;
+            try
+            {
+                types = assembly.GetTypes();
+            }
+            catch (ReflectionTypeLoadException e)
+            {
+                types = e.Types;
+            }
+
+            return types;
+        }
+
+            public static int GetProtosCount()
         {
             return index.Count;
         }
