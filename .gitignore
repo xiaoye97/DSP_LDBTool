@@ -11,6 +11,7 @@ tss_token.txt
 /package-lock.json
 /Build/*
 
+
 # User-specific files
 *.rsuser
 *.suo
@@ -85,7 +86,6 @@ StyleCopReport.xml
 *.obj
 *.iobj
 *.pch
-*.pdb
 *.ipdb
 *.pgc
 *.pgd
