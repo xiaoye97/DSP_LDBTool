@@ -26,6 +26,9 @@ Unzip mod arhive into `Dyson Sphere Program/BepInEx/plugins/LDBTool/`. (Create f
 Feel free to contact me via Discord (Kremnev8#3756) for any feedback, bug-reports or suggestions.
 
 ## Changelog
+### v2.0.4
+- Fixed issues if one of mods had missing type references
+- Fixed issues opening Proto View UI without UnityExplorer
 ### v2.0.3
 - Removed caching of string protos and grid indexes. Now only if a player has changed value manually will it be overwriting the default. With this old config files were purged. A backup is saved in case players had some important settings there.
 ### v2.0.2
