@@ -7,8 +7,8 @@ var execFile = require('child_process').execFile;
 const STAGE_FOLDER = 'Staging\\';
 const CONFIG_FOLDER = 'Config\\';
 const ARTIFACT_FOLDER = 'Build\\';
-let SRC_FOLDER = 'BlueprintTweaks\\'
-let PLUGIN_INFO = 'BlueprintTweaks\\BlueprintTweaksPlugin.cs'
+const SRC_FOLDER = 'BlueprintTweaks\\'
+const PLUGIN_INFO = 'BlueprintTweaks\\BlueprintTweaksPlugin.cs'
 
 let build = false;
 
@@ -43,6 +43,11 @@ function main() {
 	});
 	
 	writeTOML(pluginInfo);
+	let res = checkReadme(pluginInfo);
+	
+	if (!res){
+		return;
+	}
 	
 	if (!build) {
 		rl.question("Are you sure you want to release Build version " + pluginInfo.version + " ?", function(ans) {
@@ -57,6 +62,20 @@ function main() {
 		Build();
 		rl.close();
 	}
+}
+
+function checkReadme(pluginInfo){
+	const readmePath = path.join(CONFIG_FOLDER, 'README.md');
+	let readme = fs.readFileSync(readmePath);
+	
+	if (readme.includes("v"+pluginInfo.version)){		
+		console.log("Readme ok");
+		return true
+	}else{
+		console.log("Readme missing latest version changelog!");
+		return false
+	}
+	
 }
 
 function writeTOML(pluginInfo){

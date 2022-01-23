@@ -7,6 +7,9 @@
 DevEnv.targets
 dist
 Libs/Assembly-CSharp.dll
+tss_token.txt
+/package-lock.json
+/Build/*
 
 # User-specific files
 *.rsuser

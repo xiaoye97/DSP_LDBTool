@@ -5,7 +5,7 @@ schemaVersion = "0.0.1"
 namespace = "xiaoye97"
 name = "LDBTool"
 description = "Library that allows mods to add and edit Proto data. Also allows you to see Proto data, config ID's of mod Protos and change localized strings"
-versionNumber = "2.0.2"
+versionNumber = "2.0.3"
 websiteUrl = "https://github.com/kremnev8/DSP-Mods/tree/master/Mods/LDBTool"
 containsNsfwContent = false
 
