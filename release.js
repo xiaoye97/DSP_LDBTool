@@ -7,8 +7,8 @@ var execFile = require('child_process').execFile;
 const STAGE_FOLDER = 'Staging\\';
 const CONFIG_FOLDER = 'Config\\';
 const ARTIFACT_FOLDER = 'Build\\';
-const SRC_FOLDER = 'BlueprintTweaks\\'
-const PLUGIN_INFO = 'BlueprintTweaks\\BlueprintTweaksPlugin.cs'
+let SRC_FOLDER = 'BlueprintTweaks\\'
+let PLUGIN_INFO = 'BlueprintTweaks\\BlueprintTweaksPlugin.cs'
 
 let build = false;
 

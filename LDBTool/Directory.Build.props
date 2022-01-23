@@ -42,8 +42,6 @@
     <PackageReference Include="BepInEx.Core" Version="5.*" PrivateAssets="all" />
     <PackageReference Include="DysonSphereProgram.GameLibs" Version="*-*" IncludeAssets="compile" PrivateAssets="all" />
     <PackageReference Include="UnityEngine.Modules" Version="2018.4.12" IncludeAssets="compile" PrivateAssets="all" />
-
-    <Reference Include="$(MSBuildThisFileDirectory)/../Libs/UnityExplorer.BIE5.Mono.dll" Private="false" SpecificVersion="true"/>
   </ItemGroup>
 
 </Project>
