@@ -33,7 +33,7 @@
 
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
-    <PackageVersion>2.0.1</PackageVersion>
+    <PackageVersion>2.0.6</PackageVersion>
   </PropertyGroup>
   
   <!-- Shared Items -->

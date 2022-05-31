@@ -150,13 +150,9 @@ namespace xiaoye97
         private static ConfigFile CustomStringZHCN = new ConfigFile($"{Paths.ConfigPath}/LDBTool/LDBTool.CustomLocalization.ZHCN.cfg", true);
         private static ConfigFile CustomStringENUS = new ConfigFile($"{Paths.ConfigPath}/LDBTool/LDBTool.CustomLocalization.ENUS.cfg", true);
         private static ConfigFile CustomStringFRFR = new ConfigFile($"{Paths.ConfigPath}/LDBTool/LDBTool.CustomLocalization.FRFR.cfg", true);
-        
-        public static PropertyInfo OrphanedEntriesProp;
 
         internal static void Init()
         {
-            Type configFile = AccessTools.TypeByName("BepInEx.Configuration.ConfigFile");
-            OrphanedEntriesProp = configFile.GetProperty("OrphanedEntries", AccessTools.all);
             
             for (int i = 0; i <= ProtoIndex.GetProtosCount(); i++)
             {
@@ -166,25 +162,6 @@ namespace xiaoye97
                 IDDict.Add(new Dictionary<string, ConfigEntry<int>>());
                 GridIndexDict.Add(new Dictionary<string, ConfigEntry<int>>());
             }
-
-            UpdateCustomDataFile(CustomGridIndex);
-            UpdateCustomDataFile(CustomStringENUS);
-            UpdateCustomDataFile(CustomStringZHCN);
-            UpdateCustomDataFile(CustomStringFRFR);
-        }
-
-        internal static void UpdateCustomDataFile(ConfigFile file)
-        {
-            if (!file.ContainsKey(new ConfigDefinition("General", "Version")))
-            {
-                File.Copy(file.ConfigFilePath, file.ConfigFilePath + ".bak", true);
-                file.Clear();
-                ((Dictionary<ConfigDefinition, string>)OrphanedEntriesProp.GetValue(file)).Clear();
-            }
-            
-            ConfigEntry<string> version = file.Bind("General", "Version", LDBToolPlugin.VERSION, "Version of LDB Tool which created this file. DO NOT EDIT THIS MANUALLY!");
-            version.Value = LDBToolPlugin.VERSION;
-            file.Save();
         }
 
         /// <summary>

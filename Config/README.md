@@ -26,6 +26,8 @@ Unzip mod arhive into `Dyson Sphere Program/BepInEx/plugins/LDBTool/`. (Create f
 Feel free to contact me via Discord (Kremnev8#3756) for any feedback, bug-reports or suggestions.
 
 ## Changelog
+### v2.0.6
+- Fixed that CustomGridIndex, CustomLocalization.ENUS, CustomLocalization.FRFR, CustomLocalization.ZNCH config files were wiped every time the game was launched.
 ### v2.0.5
 - Fixed errors if UnityExporer was not installed.
 ### v2.0.4
