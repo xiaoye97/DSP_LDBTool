@@ -65,7 +65,7 @@ function main() {
 }
 
 function checkReadme(pluginInfo){
-	const readmePath = path.join(CONFIG_FOLDER, 'README.md');
+	const readmePath = path.join(CONFIG_FOLDER, 'CHANGELOG.md');
 	let readme = fs.readFileSync(readmePath);
 	
 	if (readme.includes("v"+pluginInfo.version)){		

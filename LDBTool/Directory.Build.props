@@ -33,15 +33,15 @@
 
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
-    <PackageVersion>2.0.6</PackageVersion>
+    <PackageVersion>3.0.0</PackageVersion>
   </PropertyGroup>
   
   <!-- Shared Items -->
 
   <ItemGroup Label="Dyson Sphere Program">
     <PackageReference Include="BepInEx.Core" Version="5.*" PrivateAssets="all" />
-    <PackageReference Include="DysonSphereProgram.GameLibs" Version="*-*" IncludeAssets="compile" PrivateAssets="all" />
+    <PackageReference Include="DysonSphereProgram.GameLibs" Version="0.10.28.20779-r.0" IncludeAssets="compile" PrivateAssets="all" />
     <PackageReference Include="UnityEngine.Modules" Version="2018.4.12" IncludeAssets="compile" PrivateAssets="all" />
-  </ItemGroup>
+ </ItemGroup>
 
 </Project>

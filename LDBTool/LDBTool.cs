@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using BepInEx;
@@ -73,12 +72,6 @@ namespace xiaoye97
             
             if (!PreToAdd[index].Contains(proto))
             {
-                if (proto is StringProto)
-                {
-                    int id = FindAvailableStringID();
-                    proto.ID = id;
-                }
-
                 Bind(proto);
                 PreToAdd[index].Add(proto);
                 TotalDict[index].Add(proto);
@@ -105,12 +98,6 @@ namespace xiaoye97
             
             if (!PostToAdd[index].Contains(proto))
             {
-                if (proto is StringProto)
-                {
-                    int id = FindAvailableStringID();
-                    proto.ID = id;
-                }
-                
                 Bind(proto);
                 PostToAdd[index].Add(proto);
                 TotalDict[index].Add(proto);
@@ -131,8 +118,7 @@ namespace xiaoye97
         #region Implementation
 
         internal static bool Finshed;
-        private static int lastStringId = 1000;
-        
+
         internal static List<List<Proto>> PreToAdd = new List<List<Proto>>();
         internal static List<List<Proto>> PostToAdd = new List<List<Proto>>();
         internal static List<List<Proto>> TotalDict = new List<List<Proto>>();
@@ -153,7 +139,6 @@ namespace xiaoye97
 
         internal static void Init()
         {
-            
             for (int i = 0; i <= ProtoIndex.GetProtosCount(); i++)
             {
                 PreToAdd.Add(new List<Proto>());
@@ -194,7 +179,6 @@ namespace xiaoye97
         {
             IdBind(proto);
             GridIndexBind(proto);
-            StringBind(proto);
         }
 
         /// <summary>
@@ -202,7 +186,6 @@ namespace xiaoye97
         /// </summary>
         private static void IdBind(Proto proto)
         {
-            if (proto is StringProto) return;
             int index = ProtoIndex.GetIndex(proto);
             
             var entry = CustomID.Bind(ProtoIndex.GetProtoName(proto), proto.Name, proto.ID);
@@ -253,98 +236,6 @@ namespace xiaoye97
             {
                 GridIndexDict[index].Add(proto.Name, entry);
             }
-        }
-
-        /// <summary>
-        /// Bind translation files through configuration files, allowing players to customize translations when translations are missing or inaccurate
-        /// </summary>
-        private static void StringBind(Proto proto)
-        {
-            if (!(proto is StringProto stringProto)) return;
-            
-            var zhcn = CustomStringZHCN.Bind("String", stringProto.Name, "", "Default String = " + stringProto.ZHCN);
-            var enus = CustomStringENUS.Bind("String", stringProto.Name, "", "Default String = " + stringProto.ENUS);
-            var frfr = CustomStringFRFR.Bind("String", stringProto.Name, "", "Default String = " + stringProto.FRFR);
-                
-            if (!string.Equals(zhcn.Value, ""))
-                stringProto.ZHCN = zhcn.Value;
-
-            if (!string.Equals(enus.Value, ""))
-                stringProto.ENUS = enus.Value;
-
-            if (!string.Equals(frfr.Value, ""))
-                stringProto.FRFR = frfr.Value;
-                
-            if (!string.IsNullOrEmpty(zhcn.Value))
-            {
-                if (ZHCNDict.ContainsKey(stringProto.Name))
-                {
-                    LDBToolPlugin.logger.LogError($"[CustomLocalization.ZHCN] Name:{stringProto.Name} There is a conflict, please check.");
-                }
-                else ZHCNDict.Add(stringProto.Name, zhcn);
-            }
-
-            if (ENUSDict != null)
-            {
-                if (ENUSDict.ContainsKey(stringProto.Name))
-                {
-                    LDBToolPlugin.logger.LogError($"[CustomLocalization.ENUS] Name:{stringProto.Name} There is a conflict, please check.");
-                }
-                else ENUSDict.Add(stringProto.Name, enus);
-            }
-
-            if (!string.IsNullOrEmpty(frfr.Value))
-            {
-                if (FRFRDict.ContainsKey(stringProto.Name))
-                {
-                    LDBToolPlugin.logger.LogError($"[CustomLocalization.FRFR] Name:{stringProto.Name} There is a conflict, please check.");
-                }
-                else FRFRDict.Add(stringProto.Name, frfr);
-            }
-        }
-        
-        /// <summary>
-        /// Check if string with id was already registered
-        /// </summary>
-        /// <param name="id">ID</param>
-        private static bool HasStringIdRegisted(int id)
-        {
-            if (LDB.strings.dataIndices.ContainsKey(id)) return true;
-            
-            if (PreToAdd[ProtoIndex.GetIndex(typeof(StringProto))].Any(proto => proto.ID == id)) return true;
-            if (PostToAdd[ProtoIndex.GetIndex(typeof(StringProto))].Any(proto => proto.ID == id)) return true;
-            
-            return false;
-        }
-
-        /// <summary>
-        /// Get last free string ID
-        /// </summary>
-        /// <returns>Last free ID</returns>
-        /// <exception cref="ArgumentException">If there are no free ID's left</exception>
-        private static int FindAvailableStringID()
-        {
-            int id = lastStringId + 1;
-
-            while (true)
-            {
-                if (!HasStringIdRegisted(id))
-                {
-                    break;
-                }
-
-                if (id > 12000)
-                {
-                    LDBToolPlugin.logger.LogError("Failed to find free index!");
-                    throw new ArgumentException("No free indices available!");
-                }
-
-                id++;
-            }
-
-            lastStringId = id;
-
-            return id;
         }
 
         /// <summary>
@@ -413,13 +304,6 @@ namespace xiaoye97
             }
 
             protoSet.dataIndices = dataIndices;
-            if (protoSet is StringProtoSet stringProtoSet)
-            {
-                for (int i = array.Length; i < protoSet.dataArray.Length; i++)
-                {
-                    stringProtoSet.nameIndices[protoSet.dataArray[i].Name] = i;
-                }
-            }
         }
 
         /// <summary>
