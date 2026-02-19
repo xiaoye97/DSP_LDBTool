@@ -1,9 +1,12 @@
 
-### v3.0.2
-- Updated for game version 0.10.33.26934
+### v3.0.3
+- Updated for game version 0.10.34+
 
 <details>
 <summary>All changes</summary>
+
+### v3.0.2
+- Updated for game version 0.10.33.26934
 
 ### v3.0.1
 - Uploaded correct assembly

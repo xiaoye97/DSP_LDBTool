@@ -20,7 +20,7 @@ Then just click **Start modded**, and the game will run with the mod installed.
 
 ### Manually
 Install BepInEx from [here](https://dsp.thunderstore.io/package/xiaoye97/BepInEx/)<br/>
-Unzip mod arhive into `Dyson Sphere Program/BepInEx/plugins/LDBTool/`. (Create folder named `LDBTool`)<br/>
+Unzip mod archive into `Dyson Sphere Program/BepInEx/plugins/LDBTool/`. (Create folder named `LDBTool`)<br/>
 
 ## Feedback and Bug Report
 Feel free to contact me via Discord (Kremnev8#3756) for any feedback, bug-reports or suggestions.
