@@ -84,6 +84,7 @@ namespace xiaoye97
         [Obsolete("Please use PreAddProto(Proto proto)")]
         public static void PreAddProto(ProtoType protoType, Proto proto)
         {
+            if (protoType == ProtoType.String) return;
             PreAddProto(proto);
         }
         

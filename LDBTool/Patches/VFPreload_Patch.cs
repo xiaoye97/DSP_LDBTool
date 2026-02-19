@@ -53,12 +53,50 @@ namespace xiaoye97.Patches
                     method.Invoke(null, new[] {protoSet});
                 }
             }
+            
+            LDBToolPlugin.logger.LogInfo("Calling ItemProto init functions...");
+            try
+            {
+                ItemProto.InitFuelNeeds();
+                ItemProto.InitConstructableItems();
+                ItemProto.InitItemIds();
+                ItemProto.InitItemIndices();
+                InitRecipeItems();
+                SignalProtoSet.InitSignalKeyIdPairs();
+            }
+            catch (Exception ex)
+            {
+                LDBToolPlugin.logger.LogError($"Error calling ItemProto init functions\n{ex}");
+            }
 
             GameMain.iconSet.loaded = false;
             GameMain.iconSet.Create();
             LDBTool.SetBuildBar();
             LDBTool.Finshed = true;
             LDBToolPlugin.logger.LogInfo("Done.");
+        }
+        
+        // Code taken from ModFixerOne (https://github.com/starfi5h/DSP_Mod_Support/tree/main/ModFixerOne)
+        private static void InitRecipeItems()
+        {
+            // To avoid conflicts caused by having the same Recipe ID, a modified function is used here.
+            // 為了避免Recipe同樣id衝突的情況發生, 在這裡使用修改後的函式
+            RecipeProto.recipeExecuteData = new Dictionary<int, RecipeExecuteData>();
+            RecipeProto[] dataArray = LDB.recipes.dataArray;
+            for (int i = 0; i < dataArray.Length; i++)
+            {
+                RecipeExecuteData recipeExecuteData = new RecipeExecuteData(dataArray[i].Items, dataArray[i].ItemCounts, dataArray[i].Results, dataArray[i].ResultCounts, dataArray[i].TimeSpend * 10000, dataArray[i].TimeSpend * 100000, dataArray[i].productive);
+                if (!RecipeProto.recipeExecuteData.ContainsKey(dataArray[i].ID))
+                {
+                    RecipeProto.recipeExecuteData.Add(dataArray[i].ID, recipeExecuteData);
+                }
+                else
+                {
+                    // In case of conflict, the recipe registered first takes precedence. Print out the recipe ID and name of the later recipe.
+                    // 有衝突時, 以先註冊的配方優先。印出後來的配方id和名稱
+                    LDBToolPlugin.logger.LogWarning($"Duplicate RecipeId:{dataArray[i].ID} Name:{dataArray[i].Name}");
+                }
+            }
         }
 
         private static void EditAllProtos<T>(ProtoSet<T> protoSet)

@@ -16,7 +16,10 @@ namespace xiaoye97
             protoTypes = (
                 from domainAssembly in AppDomain.CurrentDomain.GetAssemblies()
                 from assemblyType in GetTypesSafe(domainAssembly)
-                where assemblyType != null && typeof(Proto).IsAssignableFrom(assemblyType) && assemblyType != typeof(Proto)
+                where assemblyType != null &&
+                      typeof(Proto).IsAssignableFrom(assemblyType) && 
+                      assemblyType != typeof(Proto) &&
+                      assemblyType.FullName != "StringProto"
                 select assemblyType
                 ).ToArray();
 
